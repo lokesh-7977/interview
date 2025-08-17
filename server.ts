@@ -1,8 +1,6 @@
-import express from 'express';
-import { config } from './config';
-import { db } from './lib/prisma';
-
-const app = express();
+import { config } from './src/config';
+import { db } from './src/lib/prisma';
+import app from './src/app'
 
 (async () => {
 	try {
