@@ -1,16 +1,11 @@
-import SnowflakeId from "snowflake-id";
-import { config } from "../config";
+import SnowflakeId from 'snowflake-id';
 
 const snowflake = new SnowflakeId({
-  mid: Number(config.SNOWFLAKE_MACHINE_ID) || 1,
-  offset: new Date("2025-01-01T00:00:00Z").getTime(),
+  mid: 42,
+  offset: (2025 - 1970) * 31536000 * 1000
 });
 
-
-export const generateSnowflakeId = (): bigint => {
-  return BigInt(snowflake.generate());
-};
-
-export const generateSnowflakeIdString = (): string => {
-  return snowflake.generate().toString();
+export const createSnowflake = (): bigint => {
+  const id = snowflake.generate();
+  return typeof id === 'string' ? BigInt(id) : BigInt(id);
 };
