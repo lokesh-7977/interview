@@ -1,24 +1,18 @@
-import { config } from './src/config';
-import { db } from './src/lib/prisma';
-import app from './src/app'
+import { config } from "./src/config";
+import app from "./src/app";
+import { db } from "./src/db/connection"; 
 
 (async () => {
-	try {
-		await db.$connect();
-		console.log('DATABASE CONNECTED SUCCESSFULLY');
+  try {
+    await db.selectFrom("users").select("id").limit(1).executeTakeFirst();
 
-		app.on('error', (error: unknown) => {
-			console.error('ERROR :', error);
-			throw error;
-		});
+    console.log("DATABASE CONNECTED SUCCESSFULLY");
 
-		app.listen(config.PORT, () => {
-			console.log(
-				`Server is Listening on http://localhost:${config.PORT}`,
-			);
-		});
-	} catch (error) {
-		console.error('ERROR :', error);
-		throw error;
-	}
+    app.listen(config.PORT, () => {
+      console.log(`Server is Listening on http://localhost:${config.PORT}`);
+    });
+  } catch (error) {
+    console.error("ERROR CONNECTING TO DATABASE:", error);
+    throw error; 
+  }
 })();
