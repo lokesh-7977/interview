@@ -1,52 +1,59 @@
-# Stage 1: Build Dependencies
-
-FROM node:22-alpine AS build-deps
+# Stage 1: Build + Install dependencies + Production prune
+FROM node:22-alpine AS build
 
 WORKDIR /app
 
-# Install build dependencies
-RUN apk add --no-cache --virtual .build-deps \
-    make \
-    g++ \
-    && npm install -g pnpm \
-    && apk del .build-deps
+# Install pnpm globally for build
+RUN npm install -g pnpm
 
+# Copy package files only
 COPY package.json pnpm-lock.yaml ./
+
+# Install all dependencies (including dev)
 RUN pnpm install --frozen-lockfile
 
-# Stage 2: Build Application
-FROM build-deps AS build-app
-
-WORKDIR /app
-
+# Copy source code
 COPY . .
 
-# Build the application (add your build command here if needed)
+# Build the application
 RUN pnpm build
 
-# Stage 3: Production Image
+# Prune dev dependencies, clean pnpm store (reduce size)
+RUN pnpm prune --prod && pnpm store prune
+
+# (Optional) Gzip static assets if you have them (adjust path if needed)
+# RUN find ./dist/public -type f -exec gzip -n -9 -f {} \;
+
+# Stage 2: Production image
 FROM node:22-alpine AS final
 
-# Update Alpine packages to latest versions to reduce vulnerabilities
-RUN apk update && apk upgrade
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs && adduser -S appuser -u 1001
+
+# Update Alpine packages and install dumb-init
+RUN apk update && apk upgrade && apk add --no-cache dumb-init && rm -rf /var/cache/apk/*
 
 WORKDIR /app
 
-# Install runtime dependencies
-RUN apk add --no-cache --virtual .runtime-deps \
-    && npm install -g pnpm \
-    && apk del .runtime-deps
+# Copy pruned node_modules and build output
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/dist ./dist
 
-# Copy necessary files from previous stages
-COPY package.json pnpm-lock.yaml ./
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
+# Adjust ownership
+RUN chown -R appuser:nodejs /app
 
-# Expose application port
-EXPOSE 3000
+# Use non-root user
+USER appuser
 
-# Set environment variable
+# Set environment variables
 ENV NODE_ENV=production
+ENV PORT=4000
 
-# Command to run the application
-CMD ["pnpm", "start:prod"]
+# Expose port
+EXPOSE 4000
+
+# Use dumb-init for signal handling
+ENTRYPOINT ["dumb-init", "--"]
+
+# Run app with node directly, adjust if your entry is different
+CMD ["node", "dist/server.js"]
