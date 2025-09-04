@@ -18,6 +18,7 @@ export const config = {
   SMTP_HOST: parsedEnv.data.SMTP_HOST,
   SMTP_PORT: parsedEnv.data.SMTP_PORT,
   SMTP_USERNAME: parsedEnv.data.SMTP_USERNAME,
-  SMTP_PASSWORD: parsedEnv.data.SMTP_PASSWORD
-
+  SMTP_PASSWORD: parsedEnv.data.SMTP_PASSWORD,
+  ACCESS_TOKEN_SECRET: parsedEnv.data.ACCESS_TOKEN_SECRET,
+  REFRESH_TOKEN_SECRET: parsedEnv.data.REFRESH_TOKEN_SECRET,
 };
