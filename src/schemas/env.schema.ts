@@ -18,4 +18,6 @@ export const envSchema = z.object({
   ),
   SMTP_USERNAME: z.string().min(1, "SMTP USERNAME is required"),
   SMTP_PASSWORD: z.string().min(1, "SMTP PASSWORD is required"),
+  ACCESS_TOKEN_SECRET: z.string().min(1, "ACCESS TOKEN SECRET is required"),
+  REFRESH_TOKEN_SECRET: z.string().min(1, "REFRESH TOKEN SECRET is required")
 });
