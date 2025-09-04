@@ -5,7 +5,7 @@ const snowflake = new SnowflakeId({
   offset: (2025 - 1970) * 31536000 * 1000
 });
 
-export const createSnowflake = (): bigint => {
+export const createSnowflakeId = (): bigint => {
   const id = snowflake.generate();
   return typeof id === 'string' ? BigInt(id) : BigInt(id);
 };
